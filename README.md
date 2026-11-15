@@ -110,7 +110,7 @@ Tests verify aligned reuse/counts, constant-density offset invariance, exact ful
 
 ## Audits
 
-45 tests include every parameter of tiny one/two/three-layer flows by central finite differences, an independent finite-difference full Jacobian determinant, both inverse directions, constant-affine density, logdet sign, standard-normal identity, midpoint density integration of a small near-identity model, strict serialization, bounds, no mutation and CLI. The quadrature test is a finite-grid sanity check, not a general normalization proof; the bijective change-of-variables construction supplies the model's mathematical normalization.
+48 tests include every parameter of tiny one/two/three-layer flows by central finite differences, an independent finite-difference full Jacobian determinant, both inverse directions, constant-affine density, logdet sign, standard-normal identity, midpoint density integration of a small near-identity model, strict serialization, bounds, no mutation and CLI. The quadrature test is a finite-grid sanity check, not a general normalization proof; the bijective change-of-variables construction supplies the model's mathematical normalization.
 
 CI tests Python 3.10-3.13, trains the actual fixture and checks all four reproduced SVGs on 3.11. Figures use shared axes and expose outside-plot counts rather than silently dropping outliers.
 
@@ -123,3 +123,26 @@ Only continuous 2-D points, 1-8 layers and hidden width 1-32. No image model, de
 Independent educational implementation of **Dinh, Sohl-Dickstein and Bengio (2017), [Density estimation using Real NVP](https://arxiv.org/pdf/1605.08803v3.pdf)**, especially change of variables Eq.2-3, affine coupling/inverse Eq.4-9 and alternating couplings Section3.5. Source read for mathematics; no copied code or pretrained weights. The paper's image architecture and benchmark results are not reproduced here.
 
 MIT license.
+
+## Narrow-slice variance
+
+Conditional and aligned-window variances now integrate centered squared offsets
+against each linear density segment. The old raw-moment subtraction could return
+zero for a nonconstant random variable: a uniform slice on [99,99.000002] had
+reported variance 0 instead of about 3.3333333e-13. Reflecting the interval could
+report about 1.819e-12 for the same true variance. Clipping the subtraction at
+zero hid the cancellation; it did not fix it.
+
+The centered formula uses only nonnegative terms, then sums them with `fsum`.
+This fixes these numerical controls, not unknown tails, missed grid peaks or
+accuracy of the finite-interval approximation. Three added tests check 36
+uniform interval/grid combinations, 54 sloped grids against independent 90-digit
+Decimal raw-moment integration, both aligned-window axis choices and both narrow
+window variances. The retained demo changes only 16 variance leaves in their
+last floating digits; all other demo leaves and all four rendered SVGs stay
+unchanged. These are arithmetic checks, not a new conditional-density method.
+
+`bash examples/verify_wheel.sh` builds a fresh wheel, runs the full suite outside
+the checkout, repeats the complete demo and four figure checks, checks six
+installed module origins and runs every documented non-demo CLI command. CI
+runs this alongside the existing demo checks.

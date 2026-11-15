@@ -35,13 +35,20 @@ def _summarize(xs,logs,q):
     z=math.fsum(areas)
     if not z>0 or not math.isfinite(z):raise ValueError('invalid slice normalizer')
     density=[v/z for v in ys];cdf=[0.];cumulative=0.
-    first=second=0.
+    first=0.
     for i,area in enumerate(areas):
         a,b=ys[i],ys[i+1];x=xs[i];h=xs[i+1]-x
         first+=h*(x*(a+b)/2+h*(a/6+b/3))
-        second+=h*(x*x*(a+b)/2+2*x*h*(a/6+b/3)+h*h*(a/12+b/4))
         cumulative+=area;cdf.append(min(1.,cumulative/z))
-    cdf[-1]=1.;mean=first/z;variance=max(0.,second/z-mean*mean)
+    cdf[-1]=1.;mean=first/z
+    # Integrate (x-mean)^2 against each linear density segment. Expanding in
+    # endpoint offsets gives only nonnegative terms, unlike E[x^2]-E[x]^2.
+    centered=[]
+    for i in range(n-1):
+        u,v=xs[i]-mean,xs[i+1]-mean
+        a,b=ys[i],ys[i+1];h=xs[i+1]-xs[i]
+        centered.append(h*(2*a*u*u+2*b*v*v+(a+b)*(u+v)**2)/12)
+    variance=math.fsum(centered)/z
     values=[]
     for probability in q:
         if probability==0:value=lo
