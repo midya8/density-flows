@@ -49,3 +49,30 @@ Validation precedes all calls. Grid2-513, fixed axis0/1, fixed coordinate and in
 The outer grid is scored once. Inner indices start0..N-2 and end(start+1)..N-1 select a contiguous range, inclusive endpoints, and are checked before any evaluation. Inner summaries reuse the exact same joint log scores and coordinates, including floating-point endpoints. No second grid generation or model scoring occurs. Both use the same private interpolation/moment/quantile routine. The retained ratio is sum(outer segment areas[start:end])/sum(all outer areas), evaluated in the outer log-max scale; it avoids subtracting large log integrals. Removed fraction is1-ratio. Median shift is inner minus outer. Full-window indices give identical arrays/moments and ratio1. One authoritative model_evaluations count lives at the audit level; outer also reports its underlying call count, not additional calls.
 
 This is a comparison of finite-interval interpolants. It supplies no true tail-mass bound, error estimate, automatic expansion or stopping rule. Two agreeing grids can miss a shared narrow peak, as the analytic adversarial demo proves. The demo adds50 non-neural callback evaluations for that counterexample, separate from1,539 trained-flow evaluations. Existing conditional_slice output and artifact schemas remain unchanged.
+
+## Centered variance on narrow intervals
+
+Subtracting two raw moments, E[X^2] - E[X]^2, loses the small difference when
+the interval is narrow and far from zero. Clipping a negative result to zero
+does not recover the missing precision. The slice now integrates centered
+squares against the same piecewise-linear interpolant instead.
+
+For one segment of width h, endpoint heights a,b in the shared log-max scale,
+and endpoint offsets u,v from the computed mean, its unnormalized contribution
+is:
+
+```
+h / 12 * (2*a*u^2 + 2*b*v^2 + (a+b)*(u+v)^2)
+```
+
+Expand the linear height a(1-t)+bt and squared offset (u(1-t)+vt)^2 and
+integrate t from zero to one to obtain this identity. Every displayed term is
+nonnegative. Sum the segment contributions with `math.fsum` and divide by the
+existing trapezoid normalizer. This avoids subtracting squared absolute
+coordinates. It is still binary64 arithmetic around a rounded mean, not a
+certified relative-error bound for every possible callback.
+
+The sampled heights, grids, CDFs, quantiles, means, normalizers and evaluation
+counts are unchanged. Some variance values change in their final digits on
+the retained demo. All four checked SVGs remain byte-identical. The finite-window,
+unknown-tail and missed-peak limitations still apply.
