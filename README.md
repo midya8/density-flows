@@ -142,7 +142,9 @@ window variances. The retained demo changes only 16 variance leaves in their
 last floating digits; all other demo leaves and all four rendered SVGs stay
 unchanged. These are arithmetic checks, not a new conditional-density method.
 
-`bash examples/verify_wheel.sh` builds a fresh wheel, runs the full suite outside
-the checkout, repeats the complete demo and four figure checks, checks six
-installed module origins and runs every documented non-demo CLI command. CI
-runs this alongside the existing demo checks.
+`python examples/check_installed.py` builds a fresh wheel and runs all 48 tests
+outside the checkout, checking six installed module paths before and after the
+suite. It compares seven complete JSON reports through both CLI entrypoints,
+including every training-history value and both saved model artifacts, then
+reproduces all four SVGs. A separate CI job runs this check. Building needs pip
+and setuptools; the installed package has no runtime dependencies.
