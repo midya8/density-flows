@@ -24,4 +24,11 @@ jobs:
       - run: python examples/render_score.py /tmp/flow-demo.json --check
       - run: python examples/render_conditional.py /tmp/flow-demo.json --check
       - run: python examples/render_windows.py /tmp/flow-demo.json --check
-      - run: bash examples/verify_wheel.sh
+  installed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python examples/check_installed.py
