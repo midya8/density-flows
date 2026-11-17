@@ -1,10 +1,13 @@
-# FlowLab
+# Density flows
 
 FlowLab fits an affine-coupling density model to two-dimensional points. It implements the inverse, model log density and likelihood gradients without runtime dependencies, then compares the fitted model with an untrained flow and a train-fitted full-covariance Gaussian.
 
 The same model supports input-score gradients, finite-interval conditional slices and aligned-window sensitivity checks. [DESIGN.md](DESIGN.md) defines each calculation and its numerical limits. Conditional grids are approximations; agreement between two grids does not establish accuracy.
 
 ![Shared-axis flow sample and density audit](assets/flow-audit.svg)
+
+The repository is now `density-flows`. The Python import and CLI names stay
+`flowlab` for compatibility with existing scripts.
 
 ## Run offline
 
